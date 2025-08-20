@@ -174,6 +174,17 @@
       flex-grow: 1;
       cursor: default;
     }
+
+    /* Fix for graph container and canvas height */
+    #graph-page {
+      height: 400px;
+    }
+    #usage-chart {
+      height: 100% !important;
+      width: 100% !important;
+      display: block;
+    }
+
     @media (max-width: 900px) {
       main {
         max-width: 100%;
@@ -239,7 +250,6 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script>
     // --- Data storage and initial load ---
-    // Default water actions and their footprint (litres per unit)
     let footprintValues = {
       'Shower': 50,
       'Toilet Flush': 8,
@@ -249,7 +259,6 @@
       'Drinking': 2,
     };
 
-    // Load footprintValues from localStorage if exist
     function loadFootprintValues() {
       const saved = localStorage.getItem('waterprinx_footprints');
       if (saved) {
@@ -266,18 +275,12 @@
       localStorage.setItem('waterprinx_footprints', JSON.stringify(footprintValues));
     }
 
-    // Load item list from footprintValues keys
     function getItemList() {
       return Object.keys(footprintValues);
     }
 
-    // Days of week for reference
     const daysOfWeek = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
-    // --- Daily usage data structure ---
-    // Store daily usage entries grouped by day of week:
-    // { Mon: [...], Tue: [...], ..., Sun: [...] }
-    // Each array contains entries: {activity, quantity, footprint}
     let weeklyUsageEntries = {
       Mon: [],
       Tue: [],
@@ -288,14 +291,12 @@
       Sun: [],
     };
 
-    // --- Persistence for weekly usage across reload ---
     function loadWeeklyUsage() {
       const saved = localStorage.getItem('waterprinx_weekly_usage');
       if (saved) {
         try {
           const parsed = JSON.parse(saved);
           if (parsed && typeof parsed === 'object') {
-            // Validate keys and arrays to prevent errors
             daysOfWeek.forEach(day => {
               if (!Array.isArray(parsed[day])) {
                 parsed[day] = [];
@@ -310,7 +311,6 @@
       localStorage.setItem('waterprinx_weekly_usage', JSON.stringify(weeklyUsageEntries));
     }
 
-    // --- UI population ---
     function populateDropdown() {
       const select = document.getElementById('item-select');
       select.innerHTML = '';
@@ -332,7 +332,6 @@
       }
     }
 
-    // --- Daily usage list display for selected day ---
     function renderDailyUsageList(day) {
       const listDiv = document.getElementById('daily-usage-list');
       listDiv.innerHTML = '';
@@ -349,7 +348,6 @@
         text.textContent = `${entry.quantity} × ${entry.activity} = ${entry.footprint.toLocaleString()} litres`;
         div.appendChild(text);
 
-        // Remove button
         const removeBtn = document.createElement('button');
         removeBtn.className = 'remove-item-btn';
         removeBtn.title = `Remove entry: ${entry.quantity} × ${entry.activity} on ${dayName(day)}`;
@@ -388,7 +386,6 @@
       }
     }
 
-    // --- Add daily usage entry for selected day ---
     function addDailyUsage() {
       const select = document.getElementById('item-select');
       const quantityInput = document.getElementById('quantity-input');
@@ -413,7 +410,7 @@
         return;
       }
 
-      const footprintPerUnit = footprintValues[activity] ?? 10; // default 10L if unknown
+      const footprintPerUnit = footprintValues[activity] ?? 10;
       const footprint = footprintPerUnit * quantity;
 
       weeklyUsageEntries[day].push({ activity, quantity, footprint });
@@ -422,12 +419,10 @@
       renderDailyUsageList(day);
       renderGraph();
 
-      // Notify and reset
       quantityInput.value = 1;
       document.getElementById('output').textContent = `Added: ${quantity} × ${activity} on ${dayName(day)} = ${footprint.toLocaleString()} litres`;
     }
 
-    // --- Settings page: Render editable footprint list ---
     function renderEditableActionsList() {
       const container = document.getElementById('editable-actions-list');
       container.innerHTML = '';
@@ -456,7 +451,6 @@
       });
     }
 
-    // --- Save footprint changes ---
     function saveFootprintChanges() {
       const container = document.getElementById('editable-actions-list');
       const inputs = container.querySelectorAll('input[type=number]');
@@ -485,25 +479,22 @@
       alert('Water usage amounts updated.');
     }
 
-    // --- Chart rendering ---
     let chartInstance = null;
     function renderGraph() {
       const canvas = document.getElementById('usage-chart');
-      canvas.width = canvas.parentElement.offsetWidth;
-      canvas.height = canvas.parentElement.offsetHeight;
-      const ctx = canvas.getContext('2d');
+      // Removed manual width/height sizing for canvas to fix issue
+
       if (chartInstance) {
         chartInstance.destroy();
       }
 
-      // Summation of total usage per day for all entries
       const labels = daysOfWeek.map(day => dayName(day));
       const data = daysOfWeek.map(day => {
         const entries = weeklyUsageEntries[day] || [];
         return entries.reduce((sum, entry) => sum + entry.footprint, 0);
       });
 
-      chartInstance = new Chart(ctx, {
+      chartInstance = new Chart(canvas.getContext('2d'), {
         type: 'bar',
         data: {
           labels: labels,
@@ -519,38 +510,25 @@
           scales: {
             y: {
               beginAtZero: true,
-              title: {
-                display: true,
-                text: 'Water Usage (litres)'
-              }
+              title: { display: true, text: 'Water Usage (litres)' }
             },
             x: {
-              title: {
-                display: true,
-                text: 'Day of Week'
-              }
+              title: { display: true, text: 'Day of Week' }
             }
           },
           plugins: {
-            legend: {
-              display: false
-            },
-            tooltip: {
-              mode: 'index',
-              intersect: false
-            }
+            legend: { display: false },
+            tooltip: { mode: 'index', intersect: false }
           }
         }
       });
     }
 
-    // --- Update daily usage list when day changes ---
     document.getElementById('day-select').addEventListener('change', e => {
       renderDailyUsageList(e.target.value);
       document.getElementById('output').textContent = '';
     });
 
-    // --- Navigation ---
     function navigate(page) {
       ['main-page', 'settings-page', 'graph-page'].forEach(id => {
         document.getElementById(id).style.display = (id === page + '-page') ? 'block' : 'none';
@@ -567,14 +545,12 @@
       }
     }
 
-    // --- Initialization ---
     window.onload = () => {
       loadFootprintValues();
       loadWeeklyUsage();
 
-      // Default day-select to today's day or Wednesday if unknown
       const today = new Date();
-      const dayIndex = today.getDay(); // Sunday=0 ... Saturday=6
+      const dayIndex = today.getDay();
       const dayMap = [ 'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat' ];
       const todayShort = dayMap[dayIndex] || 'Wed';
 
