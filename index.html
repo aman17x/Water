@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>WaterPrinx - Weekly Usage Tracking</title>
+  <title>WaterPrinx - Weekly Usage with Auto Date</title>
   <style>
     /* Global & Reset */
     * { box-sizing: border-box; }
@@ -78,7 +78,7 @@
       display: block;
       margin-bottom: 0.5rem;
     }
-    select, input[type=number], input[type=text] {
+    select, input[type=number], input[type=text], input[type=date] {
       width: 100%;
       padding: 0.5rem;
       font-size: 1rem;
@@ -174,7 +174,6 @@
       flex-grow: 1;
       cursor: default;
     }
-
     /* Fix for graph container and canvas height */
     #graph-page {
       height: 400px;
@@ -216,27 +215,28 @@
         <input type="number" id="quantity-input" min="1" value="1" />
       </div>
       <div class="input-group">
-        <label for="day-select">Select Day</label>
-        <select id="day-select" aria-label="Select day to add usage for">
-          <option value="Mon">Monday</option>
-          <option value="Tue">Tuesday</option>
-          <option value="Wed" selected>Wednesday</option>
-          <option value="Thu">Thursday</option>
-          <option value="Fri">Friday</option>
-          <option value="Sat">Saturday</option>
-          <option value="Sun">Sunday</option>
-        </select>
+        <label for="date-input">Select Date</label>
+        <input type="date" id="date-input" aria-label="Select date for water usage" />
       </div>
       <button class="action-btn" onclick="addDailyUsage()">Add to Daily Usage</button>
 
       <div id="daily-usage-list" aria-live="polite" aria-label="List of daily water usage activities"></div>
-      <div id="total-usage" aria-live="polite" aria-label="Total water usage for the selected day"></div>
+      <div id="total-usage" aria-live="polite" aria-label="Total water usage for the selected date"></div>
     </section>
 
     <!-- Settings Page -->
     <section id="settings-page" style="display: none;">
       <h2>Edit Water Actions Usage Amounts</h2>
-      <div id="editable-actions-list" aria-live="polite"></div>
+      
+      <label for="new-action-name">Add New Water Action</label>
+      <input type="text" id="new-action-name" placeholder="Enter new action name" aria-label="New water action name" />
+      
+      <label for="new-action-usage">Water Usage Amount (litres per unit)</label>
+      <input type="number" id="new-action-usage" min="0" step="1" placeholder="Enter usage amount in litres" aria-label="Water usage amount in litres" />
+      
+      <button class="action-btn" onclick="addNewAction()">Add Action</button>
+
+      <div id="editable-actions-list" aria-live="polite" aria-label="List of water actions with editable usage amounts"></div>
       <button class="action-btn" onclick="saveFootprintChanges()">Save Changes</button>
     </section>
 
@@ -249,7 +249,6 @@
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script>
-    // --- Data storage and initial load ---
     let footprintValues = {
       'Shower': 50,
       'Toilet Flush': 8,
@@ -279,36 +278,23 @@
       return Object.keys(footprintValues);
     }
 
-    const daysOfWeek = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    // Store weekly usage entries by date string (YYYY-MM-DD) mapping to array of entries:
+    // { '2025-08-20': [{activity, quantity, footprint}], ... }
+    let dateUsageEntries = {};
 
-    let weeklyUsageEntries = {
-      Mon: [],
-      Tue: [],
-      Wed: [],
-      Thu: [],
-      Fri: [],
-      Sat: [],
-      Sun: [],
-    };
-
-    function loadWeeklyUsage() {
-      const saved = localStorage.getItem('waterprinx_weekly_usage');
+    function loadDateUsage() {
+      const saved = localStorage.getItem('waterprinx_date_usage');
       if (saved) {
         try {
           const parsed = JSON.parse(saved);
           if (parsed && typeof parsed === 'object') {
-            daysOfWeek.forEach(day => {
-              if (!Array.isArray(parsed[day])) {
-                parsed[day] = [];
-              }
-            });
-            weeklyUsageEntries = parsed;
+            dateUsageEntries = parsed;
           }
         } catch (e) { /* ignore */ }
       }
     }
-    function saveWeeklyUsage() {
-      localStorage.setItem('waterprinx_weekly_usage', JSON.stringify(weeklyUsageEntries));
+    function saveDateUsage() {
+      localStorage.setItem('waterprinx_date_usage', JSON.stringify(dateUsageEntries));
     }
 
     function populateDropdown() {
@@ -332,13 +318,13 @@
       }
     }
 
-    function renderDailyUsageList(day) {
+    function renderDailyUsageList(dateStr) {
       const listDiv = document.getElementById('daily-usage-list');
       listDiv.innerHTML = '';
-      const entries = weeklyUsageEntries[day] || [];
+      const entries = dateUsageEntries[dateStr] || [];
       if (entries.length === 0) {
-        listDiv.textContent = `No water usage entries for ${dayName(day)} yet.`;
-        updateTotalUsage(day);
+        listDiv.textContent = `No water usage entries for ${formatDate(dateStr)} yet.`;
+        updateTotalUsage(dateStr);
         return;
       }
 
@@ -350,49 +336,55 @@
 
         const removeBtn = document.createElement('button');
         removeBtn.className = 'remove-item-btn';
-        removeBtn.title = `Remove entry: ${entry.quantity} × ${entry.activity} on ${dayName(day)}`;
-        removeBtn.setAttribute('aria-label', `Remove entry: ${entry.quantity} ${entry.activity} on ${dayName(day)}`);
+        removeBtn.title = `Remove entry: ${entry.quantity} × ${entry.activity} on ${formatDate(dateStr)}`;
+        removeBtn.setAttribute('aria-label', `Remove entry: ${entry.quantity} ${entry.activity} on ${formatDate(dateStr)}`);
         removeBtn.textContent = '×';
         removeBtn.onclick = () => {
-          weeklyUsageEntries[day].splice(idx, 1);
-          saveWeeklyUsage();
-          renderDailyUsageList(day);
+          dateUsageEntries[dateStr].splice(idx, 1);
+          if (dateUsageEntries[dateStr].length === 0) {
+            delete dateUsageEntries[dateStr];
+          }
+          saveDateUsage();
+          renderDailyUsageList(dateStr);
           renderGraph();
         };
         div.appendChild(removeBtn);
 
         listDiv.appendChild(div);
       });
-      updateTotalUsage(day);
+      updateTotalUsage(dateStr);
     }
 
-    function updateTotalUsage(day) {
+    function updateTotalUsage(dateStr) {
       const totalDiv = document.getElementById('total-usage');
-      const entries = weeklyUsageEntries[day] || [];
+      const entries = dateUsageEntries[dateStr] || [];
       const total = entries.reduce((sum, entry) => sum + entry.footprint, 0);
-      totalDiv.textContent = `Total Water Used on ${dayName(day)}: ${total.toLocaleString()} litres`;
+      totalDiv.textContent = `Total Water Used on ${formatDate(dateStr)}: ${total.toLocaleString()} litres`;
     }
 
-    function dayName(shortDay) {
-      switch(shortDay) {
-        case 'Mon': return 'Monday';
-        case 'Tue': return 'Tuesday';
-        case 'Wed': return 'Wednesday';
-        case 'Thu': return 'Thursday';
-        case 'Fri': return 'Friday';
-        case 'Sat': return 'Saturday';
-        case 'Sun': return 'Sunday';
-        default: return shortDay;
-      }
+    function formatDate(dateStr) {
+      if (!dateStr) return '';
+      const date = new Date(dateStr);
+      if (isNaN(date)) return dateStr;
+      return date.toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric' });
+    }
+
+    // Helper to get weekday short form from date string (e.g., "Mon")
+    function getWeekdayFromDate(dateStr) {
+      if (!dateStr) return null;
+      const date = new Date(dateStr);
+      if (isNaN(date)) return null;
+      const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+      return days[date.getDay()];
     }
 
     function addDailyUsage() {
       const select = document.getElementById('item-select');
       const quantityInput = document.getElementById('quantity-input');
-      const daySelect = document.getElementById('day-select');
+      const dateInput = document.getElementById('date-input');
       const activity = select.value;
       let quantity = parseInt(quantityInput.value);
-      const day = daySelect.value;
+      const dateStr = dateInput.value;
 
       if (!activity) {
         alert('Please select an activity.');
@@ -404,23 +396,27 @@
         quantityInput.focus();
         return;
       }
-      if (!daysOfWeek.includes(day)) {
-        alert('Please select a valid day.');
-        daySelect.focus();
+      if (!dateStr) {
+        alert('Please select a valid date.');
+        dateInput.focus();
         return;
       }
 
       const footprintPerUnit = footprintValues[activity] ?? 10;
       const footprint = footprintPerUnit * quantity;
 
-      weeklyUsageEntries[day].push({ activity, quantity, footprint });
+      if (!dateUsageEntries[dateStr]) {
+        dateUsageEntries[dateStr] = [];
+      }
 
-      saveWeeklyUsage();
-      renderDailyUsageList(day);
+      dateUsageEntries[dateStr].push({ activity, quantity, footprint });
+
+      saveDateUsage();
+      renderDailyUsageList(dateStr);
       renderGraph();
 
       quantityInput.value = 1;
-      document.getElementById('output').textContent = `Added: ${quantity} × ${activity} on ${dayName(day)} = ${footprint.toLocaleString()} litres`;
+      document.getElementById('output').textContent = `Added: ${quantity} × ${activity} on ${formatDate(dateStr)} = ${footprint.toLocaleString()} litres`;
     }
 
     function renderEditableActionsList() {
@@ -473,26 +469,70 @@
 
       saveFootprintValues();
       populateDropdown();
-      renderDailyUsageList(document.getElementById('day-select').value);
+      // Refresh daily usage list for current date input
+      const dateInput = document.getElementById('date-input').value;
+      if (dateInput) renderDailyUsageList(dateInput);
       renderGraph();
 
       alert('Water usage amounts updated.');
     }
 
+    // New function to add water action (reuse from last code)
+    function addNewAction() {
+      const nameInput = document.getElementById('new-action-name');
+      const usageInput = document.getElementById('new-action-usage');
+      const name = nameInput.value.trim();
+      const usage = Number(usageInput.value);
+
+      if (!name) {
+        alert('Please enter a name for the new water action.');
+        nameInput.focus();
+        return;
+      }
+
+      if (isNaN(usage) || usage < 0) {
+        alert('Please enter a valid non-negative number for water usage amount.');
+        usageInput.focus();
+        return;
+      }
+
+      if (footprintValues.hasOwnProperty(name)) {
+        alert('This action already exists.');
+        nameInput.focus();
+        return;
+      }
+
+      footprintValues[name] = usage;
+      saveFootprintValues();
+
+      nameInput.value = '';
+      usageInput.value = '';
+
+      populateDropdown();
+      renderEditableActionsList();
+      alert(`Added new water action "${name}" with usage ${usage} litres per unit.`);
+    }
+
     let chartInstance = null;
     function renderGraph() {
       const canvas = document.getElementById('usage-chart');
-      // Removed manual width/height sizing for canvas to fix issue
-
       if (chartInstance) {
         chartInstance.destroy();
       }
 
-      const labels = daysOfWeek.map(day => dayName(day));
-      const data = daysOfWeek.map(day => {
-        const entries = weeklyUsageEntries[day] || [];
-        return entries.reduce((sum, entry) => sum + entry.footprint, 0);
+      // Calculate totals per weekday (Mon-Sun) by summing all dates matching that weekday
+      const totalsByWeekday = { Mon: 0, Tue: 0, Wed: 0, Thu: 0, Fri: 0, Sat: 0, Sun: 0 };
+
+      Object.entries(dateUsageEntries).forEach(([dateStr, entries]) => {
+        const wd = getWeekdayFromDate(dateStr);
+        if (wd && totalsByWeekday.hasOwnProperty(wd)) {
+          const daySum = entries.reduce((sum, entry) => sum + entry.footprint, 0);
+          totalsByWeekday[wd] += daySum;
+        }
       });
+
+      const labels = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+      const data = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(day => totalsByWeekday[day]);
 
       chartInstance = new Chart(canvas.getContext('2d'), {
         type: 'bar',
@@ -524,7 +564,7 @@
       });
     }
 
-    document.getElementById('day-select').addEventListener('change', e => {
+    document.getElementById('date-input').addEventListener('change', e => {
       renderDailyUsageList(e.target.value);
       document.getElementById('output').textContent = '';
     });
@@ -535,8 +575,13 @@
       });
       if (page === 'main') {
         populateDropdown();
-        const selectedDay = document.getElementById('day-select').value;
-        renderDailyUsageList(selectedDay);
+        let dateInput = document.getElementById('date-input');
+        // Default date to today if empty
+        if (!dateInput.value) {
+          const todayISO = new Date().toISOString().slice(0, 10);
+          dateInput.value = todayISO;
+        }
+        renderDailyUsageList(dateInput.value);
         document.getElementById('output').textContent = '';
       } else if (page === 'settings') {
         renderEditableActionsList();
@@ -547,16 +592,7 @@
 
     window.onload = () => {
       loadFootprintValues();
-      loadWeeklyUsage();
-
-      const today = new Date();
-      const dayIndex = today.getDay();
-      const dayMap = [ 'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat' ];
-      const todayShort = dayMap[dayIndex] || 'Wed';
-
-      const daySelect = document.getElementById('day-select');
-      daySelect.value = todayShort;
-
+      loadDateUsage();
       navigate('main');
     };
   </script>
