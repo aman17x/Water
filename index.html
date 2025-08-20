@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>WaterPrinx - Sample Frontend Preview</title>
+  <title>WaterPrinx - Enhanced Frontend</title>
   <style>
     /* Global & Reset */
     * { box-sizing: border-box; }
@@ -68,27 +68,25 @@
       box-shadow: 0 8px 18px rgb(0 0 0 / 0.1);
       min-height: 70vh;
     }
-    #main-page h2 {
+    h2 {
       margin-top: 0;
       font-weight: 700;
       color: #0a74da;
     }
-    #main-page .input-group {
-      margin-bottom: 1.5rem;
-    }
-    #main-page label {
+    label {
       font-weight: 600;
       display: block;
       margin-bottom: 0.5rem;
     }
-    #main-page select, #main-page input[type=number] {
+    select, input[type=number], input[type=text] {
       width: 100%;
       padding: 0.5rem;
       font-size: 1rem;
       border-radius: 6px;
       border: 1px solid #ccc;
+      margin-bottom: 1rem;
     }
-    #main-page button {
+    button.action-btn {
       background: #0a74da;
       color: white;
       padding: 0.75rem 1.5rem;
@@ -99,83 +97,43 @@
       transition: background-color 0.3s ease;
       margin-top: 0.5rem;
     }
-    #main-page button:hover, #main-page button:focus {
+    button.action-btn:hover, button.action-btn:focus {
       background: #064a85;
       outline: none;
     }
     #output {
-      margin-top: 2rem;
+      margin-top: 1rem;
       font-size: 1.25rem;
       font-weight: 600;
       color: #222;
       min-height: 2em;
       word-break: break-word;
     }
-    #settings-page h2 {
-      margin-top: 0;
-      font-weight: 700;
-      color: #0a74da;
-    }
-    #settings-page label {
-      font-weight: 600;
+    #daily-usage-list {
       margin-top: 1rem;
-      display: block;
-    }
-    #settings-page select, #settings-page input[type=text] {
-      width: 100%;
-      padding: 0.5rem;
-      font-size: 1rem;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-      margin-top: 0.25rem;
-    }
-    #settings-page button {
-      background: #0a74da;
-      color: white;
-      margin-top: 1rem;
-      padding: 0.5rem 1.2rem;
-      font-weight: 700;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: background-color 0.3s ease;
-    }
-    #settings-page button:hover, #settings-page button:focus {
-      background: #064a85;
-      outline: none;
-    }
-    #dropdown-list {
-      background: #f6f9ff;
-      border-radius: 8px;
-      max-height: 180px;
+      border-top: 1px solid #ccc;
+      padding-top: 1rem;
+      max-height: 250px;
       overflow-y: auto;
-      margin-top: 0.5rem;
-      padding: 0.5rem;
-      border: 1px solid #ccc;
     }
-    #dropdown-list div {
-      padding: 0.3rem 0.6rem;
-      border-bottom: 1px solid #ddd;
+    #daily-usage-list div {
       display: flex;
       justify-content: space-between;
-      align-items: center;
-      word-break: break-word;
+      padding: 0.3rem 0;
+      border-bottom: 1px solid #eee;
+      font-size: 1rem;
     }
-    #dropdown-list div:last-child {
+    #daily-usage-list div:last-child {
       border-bottom: none;
     }
     .remove-item-btn {
       background: #e74c3c;
       border: none;
       color: white;
-      border-radius: 50%;
-      width: 22px;
-      height: 22px;
+      border-radius: 4px;
+      padding: 0 6px;
       cursor: pointer;
       font-weight: bold;
-      line-height: 22px;
-      text-align: center;
-      padding: 0;
       margin-left: 12px;
       transition: background-color 0.3s ease;
     }
@@ -183,52 +141,43 @@
       background: #b43127;
       outline: none;
     }
-    #graph-page h2 {
-      margin-top: 0;
+    #total-usage {
+      margin-top: 1rem;
       font-weight: 700;
+      font-size: 1.3rem;
+      border-top: 2px solid #0a74da;
+      padding-top: 0.5rem;
       color: #0a74da;
-      margin-bottom: 1rem;
     }
-    #graph-container {
-      width: 100%;
-      max-width: 860px;
-      height: 400px;
+    /* Settings list UI */
+    #editable-actions-list {
+      max-height: 300px;
+      overflow-y: auto;
+      margin-top: 1rem;
     }
-    #usage-chart {
-      width: 100% !important;
-      height: 100% !important;
-      display: block;
+    #editable-actions-list div {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.3rem 0.6rem;
+      border-bottom: 1px solid #ddd;
+    }
+    #editable-actions-list div:last-child {
+      border-bottom: none;
+    }
+    #editable-actions-list input[type=number] {
+      width: 80px;
+      margin-left: 1rem;
+      font-size: 1rem;
+    }
+    #editable-actions-list label {
+      flex-grow: 1;
+      cursor: default;
     }
     @media (max-width: 900px) {
       main {
         max-width: 100%;
         width: 100%;
-      }
-      #graph-container {
-        max-width: 100%;
-      }
-    }
-    @media (max-width: 600px) {
-      header {
-        flex-direction: column;
-        align-items: flex-start;
-        padding: 0.7rem 1rem;
-      }
-      header h1 {
-        font-size: 1.1rem;
-        margin-bottom: 0.5rem;
-      }
-      nav {
-        gap: 4px;
-      }
-      main {
-        padding: 0.7rem 0.5rem 2rem 0.5rem;
-      }
-      #graph-container {
-        height: 220px;
-      }
-      #usage-chart {
-        height: 220px !important;
       }
     }
   </style>
@@ -237,9 +186,9 @@
   <header>
     <h1>WaterPrinx</h1>
     <nav>
-  <button onclick="navigate('main')" aria-label="Go to Main Page">Main Page</button>
-  <button onclick="navigate('settings')" aria-label="Go to Settings">Settings</button>
-  <button onclick="navigate('graph')" aria-label="Go to Usage Graph">Usage Graph</button>
+      <button onclick="navigate('main')" aria-label="Go to Main Page">Main Page</button>
+      <button onclick="navigate('settings')" aria-label="Go to Settings">Water Actions Settings</button>
+      <button onclick="navigate('graph')" aria-label="Go to Usage Graph">Usage Graph</button>
     </nav>
   </header>
 
@@ -248,25 +197,24 @@
     <section id="main-page" style="display: none;">
       <h2>Calculate Water Footprint</h2>
       <div class="input-group">
-        <label for="item-select">Select Item</label>
+        <label for="item-select">Select Activity</label>
         <select id="item-select"></select>
       </div>
       <div class="input-group">
         <label for="quantity-input">Quantity / Usage</label>
         <input type="number" id="quantity-input" min="1" value="1" />
       </div>
-      <button onclick="calculateFootprint()">Calculate Footprint</button>
-      <div id="output"></div>
+      <button class="action-btn" onclick="addDailyUsage()">Add to Daily Usage</button>
+
+      <div id="daily-usage-list" aria-live="polite" aria-label="List of daily water usage activities"></div>
+      <div id="total-usage" aria-live="polite" aria-label="Total water usage for the day"></div>
     </section>
 
     <!-- Settings Page -->
     <section id="settings-page" style="display: none;">
-      <h2>Edit Item List</h2>
-      <label for="new-item-input">Add New Item</label>
-      <input type="text" id="new-item-input" placeholder="Enter new item name" />
-      <button onclick="addItem()">Add Item</button>
-
-      <div id="dropdown-list" aria-live="polite"></div>
+      <h2>Edit Water Actions Usage Amounts</h2>
+      <div id="editable-actions-list" aria-live="polite"></div>
+      <button class="action-btn" onclick="saveFootprintChanges()">Save Changes</button>
     </section>
 
     <!-- Graph Page -->
@@ -278,43 +226,72 @@
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script>
-    // Initial items for dropdown - can be edited in settings
-    let itemList = ['Shower', 'Toilet Flush', 'Washing Machine', 'Dishwasher', 'Cooking', 'Drinking'];
-    // Example footprint values (litres per unit)
-    const footprintValues = {
+    // --- Data storage and initial load ---
+    // Default water actions and their footprint (litres per unit)
+    let footprintValues = {
       'Shower': 50,
       'Toilet Flush': 8,
       'Washing Machine': 70,
       'Dishwasher': 15,
       'Cooking': 10,
-      'Drinking': 2
+      'Drinking': 2,
     };
-    // Save dropdown to localStorage for persistence (optional)
-    function saveItems() {
-      localStorage.setItem('waterprinx_items', JSON.stringify(itemList));
-    }
-    function loadItems() {
-      const saved = localStorage.getItem('waterprinx_items');
+
+    // Load footprintValues from localStorage if exist
+    function loadFootprintValues() {
+      const saved = localStorage.getItem('waterprinx_footprints');
       if (saved) {
         try {
           const parsed = JSON.parse(saved);
-          if (Array.isArray(parsed)) itemList = parsed;
+          if (parsed && typeof parsed === 'object') {
+            footprintValues = parsed;
+          }
+        } catch (e) {/* ignore */}
+      }
+    }
+
+    function saveFootprintValues() {
+      localStorage.setItem('waterprinx_footprints', JSON.stringify(footprintValues));
+    }
+
+    // Load item list from footprintValues keys
+    function getItemList() {
+      return Object.keys(footprintValues);
+    }
+
+    // For daily water usage entries array: [{activity, quantity, footprint}]
+    let dailyUsageEntries = [];
+
+    // --- Persistence for daily usage across page reload (optional) ---
+    function loadDailyUsage() {
+      const saved = localStorage.getItem('waterprinx_daily_usage');
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed)) {
+            dailyUsageEntries = parsed;
+          }
         } catch (e) { /* ignore */ }
       }
     }
-    // Populate dropdown on main page
+    function saveDailyUsage() {
+      localStorage.setItem('waterprinx_daily_usage', JSON.stringify(dailyUsageEntries));
+    }
+
+    // --- UI population ---
     function populateDropdown() {
       const select = document.getElementById('item-select');
       select.innerHTML = '';
-      if (itemList.length === 0) {
+      const items = getItemList();
+      if (items.length === 0) {
         const option = document.createElement('option');
         option.value = '';
-        option.textContent = 'No items available';
+        option.textContent = 'No activities available';
         select.appendChild(option);
         select.disabled = true;
       } else {
         select.disabled = false;
-        itemList.forEach(item => {
+        items.forEach(item => {
           const option = document.createElement('option');
           option.value = item;
           option.textContent = item;
@@ -322,109 +299,160 @@
         });
       }
     }
-    // Render item list in settings page with remove buttons
-    function renderSettingsList() {
-      const list = document.getElementById('dropdown-list');
-      list.innerHTML = '';
-      if (itemList.length === 0) {
-        list.innerHTML = '<div style="color:#888;">No items. Add new above.</div>';
+
+    // --- Daily usage list display ---
+    function renderDailyUsageList() {
+      const listDiv = document.getElementById('daily-usage-list');
+      listDiv.innerHTML = '';
+      if (dailyUsageEntries.length === 0) {
+        listDiv.textContent = 'No water usage entries added yet.';
+        updateTotalUsage();
         return;
       }
-      itemList.forEach((item, idx) => {
+
+      dailyUsageEntries.forEach((entry, idx) => {
         const div = document.createElement('div');
-        div.textContent = item;
-        const btn = document.createElement('button');
-        btn.textContent = '×';
-        btn.setAttribute('aria-label', `Remove ${item}`);
-        btn.className = 'remove-item-btn';
-        btn.onclick = () => {
-          itemList.splice(idx, 1);
-          saveItems();
-          renderSettingsList();
-          populateDropdown();
+        const text = document.createElement('span');
+        text.textContent = `${entry.quantity} × ${entry.activity} = ${entry.footprint.toLocaleString()} litres`;
+        div.appendChild(text);
+
+        // Remove button
+        const removeBtn = document.createElement('button');
+        removeBtn.className = 'remove-item-btn';
+        removeBtn.title = `Remove entry: ${entry.quantity} × ${entry.activity}`;
+        removeBtn.setAttribute('aria-label', `Remove entry: ${entry.quantity} ${entry.activity}`);
+        removeBtn.textContent = '×';
+        removeBtn.onclick = () => {
+          dailyUsageEntries.splice(idx, 1);
+          saveDailyUsage();
+          renderDailyUsageList();
         };
-        div.appendChild(btn);
-        list.appendChild(div);
+        div.appendChild(removeBtn);
+
+        listDiv.appendChild(div);
       });
+      updateTotalUsage();
     }
-    // Add item from input in settings
-    function addItem() {
-      const input = document.getElementById('new-item-input');
-      let val = input.value.trim();
-      if (!val) {
-        alert('Input is empty.');
-        return;
-      }
-      if (itemList.includes(val)) {
-        alert('Item already exists.');
-        return;
-      }
-      itemList.push(val);
-      saveItems();
-      renderSettingsList();
-      populateDropdown();
-      input.value = '';
+
+    function updateTotalUsage() {
+      const totalDiv = document.getElementById('total-usage');
+      const total = dailyUsageEntries.reduce((sum, entry) => sum + entry.footprint, 0);
+      totalDiv.textContent = `Total Water Used Today: ${total.toLocaleString()} litres`;
     }
-    // Calculate footprint on Main page
-    function calculateFootprint() {
+
+    // --- Add daily usage entry ---
+    function addDailyUsage() {
       const select = document.getElementById('item-select');
-      const item = select.value;
-      const qtyInput = document.getElementById('quantity-input');
-      let qty = parseInt(qtyInput.value);
-      if (!item || itemList.length === 0) {
-        alert('Please select an item.');
+      const quantityInput = document.getElementById('quantity-input');
+      const activity = select.value;
+      let quantity = parseInt(quantityInput.value);
+
+      if (!activity) {
+        alert('Please select an activity.');
+        select.focus();
         return;
       }
-      if (isNaN(qty) || qty <= 0) {
+      if (isNaN(quantity) || quantity <= 0) {
         alert('Please enter a valid quantity (>0).');
-        qtyInput.focus();
+        quantityInput.focus();
         return;
       }
-      const footprint = (footprintValues[item] || 10) * qty; // default 10L if unknown
-      const output = document.getElementById('output');
-      output.textContent = `Estimated water footprint for ${qty} ${item}(s): ${footprint.toLocaleString()} litres`;
+
+      const footprintPerUnit = footprintValues[activity] ?? 10; // default 10L if unknown
+      const footprint = footprintPerUnit * quantity;
+
+      dailyUsageEntries.push({ activity, quantity, footprint });
+
+      saveDailyUsage();
+      renderDailyUsageList();
+
+      // Reset quantity input for convenience
+      quantityInput.value = 1;
+      document.getElementById('output').textContent = `Added: ${quantity} × ${activity} = ${footprint.toLocaleString()} litres`;
     }
-    // Page navigation logic
-    function navigate(page) {
-      ['main-page', 'settings-page', 'graph-page'].forEach(id => {
-        document.getElementById(id).style.display = (id === page + '-page') ? 'block' : 'none';
-      });
-      if (page === 'main') {
-        populateDropdown();
-        document.getElementById('output').textContent = '';
-      } else if (page === 'settings') {
-        renderSettingsList();
-      } else if (page === 'graph') {
-        renderGraph();
+
+    // --- Settings page: Render editable footprint list ---
+    function renderEditableActionsList() {
+      const container = document.getElementById('editable-actions-list');
+      container.innerHTML = '';
+      const entries = getItemList();
+      if (entries.length === 0) {
+        container.textContent = 'No water actions to edit.';
+        return;
       }
+      entries.forEach((action) => {
+        const div = document.createElement('div');
+        const label = document.createElement('label');
+        label.textContent = action;
+        label.htmlFor = `fp-input-${action}`;
+        div.appendChild(label);
+
+        const input = document.createElement('input');
+        input.type = 'number';
+        input.min = '0';
+        input.step = '1';
+        input.id = `fp-input-${action}`;
+        input.value = footprintValues[action];
+        input.setAttribute('aria-label', `Usage amount for ${action} in litres per unit`);
+        div.appendChild(input);
+
+        container.appendChild(div);
+      });
     }
-    // Chart.js bar chart sample for weekly usage
+
+    // --- Save footprint changes ---
+    function saveFootprintChanges() {
+      const container = document.getElementById('editable-actions-list');
+      const inputs = container.querySelectorAll('input[type=number]');
+      let hasError = false;
+      inputs.forEach(input => {
+        const val = Number(input.value);
+        if (isNaN(val) || val < 0) {
+          alert(`Invalid value for "${input.previousSibling.textContent}". Must be a non-negative number.`);
+          input.focus();
+          hasError = true;
+          return false;
+        }
+      });
+      if (hasError) return;
+
+      inputs.forEach(input => {
+        const action = input.previousSibling.textContent;
+        footprintValues[action] = Number(input.value);
+      });
+
+      saveFootprintValues();
+      populateDropdown();
+
+      // Inform user
+      alert('Water usage amounts updated.');
+    }
+
+    // --- Chart rendering ---
     let chartInstance = null;
     function renderGraph() {
       const canvas = document.getElementById('usage-chart');
-      // Resize canvas for responsiveness
       canvas.width = canvas.parentElement.offsetWidth;
       canvas.height = canvas.parentElement.offsetHeight;
       const ctx = canvas.getContext('2d');
       if (chartInstance) {
         chartInstance.destroy();
       }
-      // Sample weekly data for items usage in litres
-      const weeklyData = {
-        labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-        datasets: []
-      };
-      // Generate random sample data for each item in itemList
-      itemList.forEach((item, idx) => {
-        weeklyData.datasets.push({
+      // Generate sample weekly data (random) for current itemList
+      const labels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+      const datasets = [];
+      const items = getItemList();
+      items.forEach((item, idx) => {
+        datasets.push({
           label: item,
           backgroundColor: `hsl(${(idx * 60) % 360}, 70%, 55%)`,
-          data: Array.from({ length: 7 }, () => Math.floor(Math.random() * 100) + 10)
+          data: Array.from({ length: 7 }, () => Math.floor(Math.random() * 100) + 10),
         });
       });
+
       chartInstance = new Chart(ctx, {
         type: 'bar',
-        data: weeklyData,
+        data: { labels, datasets: datasets },
         options: {
           responsive: true,
           maintainAspectRatio: false,
@@ -457,9 +485,27 @@
         }
       });
     }
-    // Initial setup
+
+    // --- Navigation ---
+    function navigate(page) {
+      ['main-page', 'settings-page', 'graph-page'].forEach(id => {
+        document.getElementById(id).style.display = (id === page + '-page') ? 'block' : 'none';
+      });
+      if (page === 'main') {
+        populateDropdown();
+        renderDailyUsageList();
+        document.getElementById('output').textContent = '';
+      } else if (page === 'settings') {
+        renderEditableActionsList();
+      } else if (page === 'graph') {
+        renderGraph();
+      }
+    }
+
+    // --- Initialization ---
     window.onload = () => {
-      loadItems();
+      loadFootprintValues();
+      loadDailyUsage();
       navigate('main');
     };
   </script>
